@@ -1,0 +1,10 @@
+aiofiles==0.7.0
+aiomysql==0.0.21
+httptools==0.2.0
+multidict==5.1.0
+PyMySQL==0.9.3
+sanic==21.6.0
+sanic-routing==0.7.0
+ujson==4.0.2
+uvloop==0.15.3
+websockets==9.1
