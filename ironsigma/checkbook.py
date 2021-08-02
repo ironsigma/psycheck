@@ -6,6 +6,8 @@ from sanic.log import logger
 from sanic.request import Request
 from sanic.response import HTTPResponse
 
+from ironsigma import env
+
 
 app = Sanic("Checkbook")
 
@@ -13,6 +15,8 @@ app = Sanic("Checkbook")
 # paths
 pkg_path = pathlib.Path(__file__).parent
 static_path = pkg_path.joinpath("static")
+
+app.config.update(env.load(".env", "SANIC_"))
 
 
 @app.main_process_start
@@ -23,9 +27,9 @@ async def open_db(app, loop):
 @app.before_server_start
 async def db_connect(app, loop):
     app.ctx.db = mariadb.connect(
-        host='localhost', port=3306,
-        user='checkbook_user', password='checkbook_pass',
-        database='checkbook')
+        host=app.config.DB_HOST, port=app.config.DB_PORT,
+        user=app.config.DB_USER, password=app.config.DB_PASS,
+        database=app.config.DB_NAME)
     logger.info('DB connection created')
 
 
