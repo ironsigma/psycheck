@@ -1,0 +1,19 @@
+[run]
+branch = True
+command_line = -m pytest
+
+omit =
+    # exclude test code
+    tests/**
+
+    # exclude virtual env
+    venv/**
+
+    # exclude CI build env
+    /home/runner/.local/**
+
+    # exclude system libs
+    /usr/lib/**
+
+[report]
+fail_under = 80

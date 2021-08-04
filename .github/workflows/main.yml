@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Python Unit-Testing (pytest)
+name: Python Test Coverage
 
 
 on:
@@ -18,9 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Running Unit-Tests (pytest)
+      - name: Installing Packages
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install pytest
-          python -m pytest
+          python -m pip install --no-input --upgrade pip
+          python -m pip install --no-input --requirement requirements.txt
+          python -m pip install --no-input pytest coverage
+
+      - name: Unit Test Coverage
+        run: |
+          python -m coverage run --rcfile .github/workflows/coveragerc
+          python -m coverage report --rcfile .github/workflows/coveragerc
