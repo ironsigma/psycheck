@@ -22,7 +22,7 @@ jobs:
         run: |
           python -m pip install --no-input --upgrade pip
           python -m pip install --no-input --requirement requirements.txt
-          python -m pip install --no-input pytest coverage
+          python -m pip install --no-input pytest coverage sanic_testing
 
       - name: Unit Test Coverage
         run: |
