@@ -2,7 +2,7 @@ import pathlib
 
 from sanic import Sanic, Blueprint
 from sanic.log import logger
-from ironsigma import api_blueprint
+from ironsigma import api_blueprint, index_blueprint
 
 
 def create(config, db_factory):
@@ -13,6 +13,7 @@ def create(config, db_factory):
     app.config.update(config)
 
     # Blueprints
+    app.blueprint(Blueprint.group(index_blueprint.bp, url_prefix="/"))
     app.blueprint(Blueprint.group(api_blueprint.bp, url_prefix="/api"))
 
     # DB Setup
