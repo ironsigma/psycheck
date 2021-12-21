@@ -1,4 +1,5 @@
 import os
+import re
 
 
 def load(fileOrStream, env_prefix='') -> dict:
@@ -54,7 +55,7 @@ def _load(stream, env_prefix: str) -> dict:
             continue
 
         # split
-        key, val = line.split('=', 1)
+        key, val = re.split(r'\s*=\s*', line, 1);
 
         # overide with env
         if f'{env_prefix}{key}' in os.environ:
@@ -70,12 +71,16 @@ def _load(stream, env_prefix: str) -> dict:
 
             # find ref in environment or previous vars
             ref_val = None
+
+            # prefix + ref in os environment
             if f'{env_prefix}{ref}' in os.environ:
                 ref_val = os.environ[f'{env_prefix}{ref}']
 
+            # ref no prefix in os environment
             elif ref in os.environ:
                 ref_val = os.environ[ref]
 
+            # ref in currrent config
             elif ref in env:
                 ref_val = env[ref]
 
