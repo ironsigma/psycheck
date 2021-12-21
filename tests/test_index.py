@@ -1,14 +1,14 @@
 import pytest
 
 from sanic_testing import TestManager
-from tests.mocks import DatabaseFactory
+from tests.mocks import MockDatabaseFactory
 from ironsigma import app_factory
 
 
 @pytest.fixture
 def app():
     config = {}
-    app = app_factory.create(config, DatabaseFactory)
+    app = app_factory.create(config, MockDatabaseFactory)
     TestManager(app)
     return app
 
