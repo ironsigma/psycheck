@@ -17,4 +17,4 @@ def test_api(app):
     req, res = app.test_client.get("/")
 
     assert res.status == 200
-    assert b'<h1>Checkbook</h1>' in res.body
+    assert b'<div id="app"></div>' in res.body
