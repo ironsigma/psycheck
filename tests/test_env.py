@@ -6,12 +6,12 @@ from ironsigma import env
 
 def test_simple_load():
     config_string = io.StringIO("""
-APP_USER=foo
-APP_EMAIL=foo@example.com
+APP_USER = foo
+APP_EMAIL =foo@example.com
 
 # Settings
-APP_RES=2.5
-APP_PORT=6900""")
+APP_RES= 2.5
+APP_PORT  =   6900""")
 
     config = env.load(config_string)
 
@@ -36,8 +36,8 @@ def test_prioritize_env():
 
 def test_ref_var():
     config_string = io.StringIO("""
-DOMAIN=example.com
-ADMIN_EMAIL=admin@${DOMAIN}""")
+DOMAIN = example.com
+ADMIN_EMAIL = admin@${DOMAIN}""")
 
     config = env.load(config_string)
 
