@@ -1,0 +1,16 @@
+.tx-row {
+    margin-bottom: .8rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tx-title {
+    margin-bottom: 0;
+}
+
+.tx-amount {
+    padding-top: .8rem;
+}
+
+.tx-icon {
+    font-size: 2.3rem;
+}

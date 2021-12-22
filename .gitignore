@@ -2,7 +2,7 @@
 /venv/
 /htmlcov/
 /.pytest_cache/
-/.env
+/tmp/
 __pycache__/
 
 # files

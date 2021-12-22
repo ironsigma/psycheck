@@ -17,11 +17,24 @@ DB_PASS=pass
 DB_NAME=checkbook
 ```
 
+## MariaDB Connector
+
+Make sure the following packages are installed:
+
+- python3-devel
+- mariadb-connector-c-devel
+
+then install as usual:
+
+```bash
+    pip install mariadb
+```
+
+
 ## Running App
 
 To run the app in development mode use the following:
 
 ``` shell
-    sanic --debug --reload --access-logs --worker 2 ironsigma.checkbook.app
+    sanic --debug --reload --access-logs --worker 1 --factory ironsigma.app:create
 ```
-
