@@ -26,11 +26,13 @@ function formatCurrency (amount) {
 }
 
 function formatDate(dateStr) {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Sat', 'Sun'];
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Sat'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const date = new Date(dateStr);
+  // dateStr is ISO date (i.g. 2021-12-21) since new Date() will parse as UTC
+  // we set the time as noon GMT, this will have all time zones in the same day
+  const date = new Date(dateStr + "T12:00:00");
   return days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' + date.getDate();
 }
 
@@ -76,12 +78,14 @@ class CheckbookComponent extends React.Component {
     $.getJSON("/api/transactions")
       .done(data => {
         this.setState({
+          ...this.state,
           isLoaded: true,
           items: data.transactions
         });
       })
       .fail((_, status, error) => {
         this.setState({
+          ...this.state,
           isLoaded: true,
           error: status + ", " + error
         })
