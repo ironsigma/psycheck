@@ -29,7 +29,7 @@ async def transactions(req: Request) -> HTTPResponse:
     # fetch records
     cur = Sanic.get_app().ctx.db.cursor()
     cur.execute("SELECT recur_id, icon, color, payee, memo, amount, rrule, start_dt " +
-                "FROM recurring WHERE acc_id = ?", (2,))
+                "FROM recurring")
 
     # genereate transactions from recurrence rules
     txns = []
