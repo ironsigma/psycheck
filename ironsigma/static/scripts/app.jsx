@@ -75,7 +75,7 @@ class CheckbookComponent extends React.Component {
   }
 
   componentDidMount() {
-    $.getJSON("/api/transactions")
+    $.getJSON("/api/scheduled")
       .done(data => {
         this.setState({
           ...this.state,

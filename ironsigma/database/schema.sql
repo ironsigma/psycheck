@@ -32,3 +32,18 @@ CREATE TABLE `register` (
   CONSTRAINT `reg_recur_fk` FOREIGN KEY (`recur_id`)
   REFERENCES `recurring` (`recur_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+
+-- Statement Table
+
+-- Each 1st of the month add one entry that sums up previous month.
+
+CREATE TABLE `statement` (
+  `stmt_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `date` DATE NOT NULL,
+  `debits` decimal(8,2) NOT NULL CHECK (debits >= 0),
+  `credits` decimal(8,2) NOT NULL CHECK (credits >= 0),
+  `balance` decimal(8,2) NOT NULL,
+  PRIMARY KEY (`stmt_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

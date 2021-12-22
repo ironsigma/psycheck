@@ -12,6 +12,15 @@ class MockCursor:
         if hasattr(app.ctx, 'sql_cur_results'):
             self.item_list = app.ctx.sql_cur_results
 
+    def fetchone(self):
+        if not self.item_list:
+            print("row:", None)
+            return None
+
+        row = self.item_list.pop(0)
+        print("row:", row)
+        return row
+
     def __iter__(self):
         for item in self.item_list:
             print("row:", item)
