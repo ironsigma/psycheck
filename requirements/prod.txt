@@ -1,0 +1,2 @@
+-r common.txt
+mariadb==1.0.9
