@@ -28,12 +28,12 @@ async def transactions(req: Request) -> HTTPResponse:
 
     # fetch records
     cur = Sanic.get_app().ctx.db.cursor()
-    cur.execute("SELECT recur_id, icon, color, payee, memo, amount, rrule, start_dt " +
+    cur.execute("SELECT recur_id, type_code, payee, memo, amount, rrule, start_dt, icon, color " +
                 "FROM recurring")
 
     # genereate transactions from recurrence rules
     txns = []
-    for (recur_id, icon, color, payee, memo, amount, rrule, start_dt) in cur:
+    for (recur_id, type_code, payee, memo, amount, rrule, start_dt, icon, color) in cur:
 
         # build rule, and generate instances
         rule = rrulestr(rrule, dtstart=start_dt)
@@ -43,6 +43,7 @@ async def transactions(req: Request) -> HTTPResponse:
         for dt in instances:
             txns.append({
                 "id": len(txns),
+                "type": 'credit' if type_code == 'C' else 'debit',
                 "date": dt.date().isoformat(),
                 "payee": payee,
                 "memo": memo,

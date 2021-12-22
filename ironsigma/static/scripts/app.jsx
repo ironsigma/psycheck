@@ -120,7 +120,7 @@ class CheckbookComponent extends React.Component {
                 payee={item.payee}
                 date={item.date}
                 memo={item.memo}
-                amountCents={item.amount.fixed}
+                amountCents={item.amount.fixed * (item.type === 'credit' ? -1 : 1)}
                 balanceCents={balanceCents} />
             );
           }
