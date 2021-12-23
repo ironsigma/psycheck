@@ -6,11 +6,14 @@ from sanic.response import HTTPResponse
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import rrulestr
+from typing import Final
 
 
 bp = Blueprint("api")
 
-txn_type_codes = {
+FIRST_DAY_CURR_MONTH_SQL : Final = 'subdate(curdate(), (day(curdate()) - 1))'
+
+TXN_TYPE_CODES : Final = {
     'B': 'balance',
     'D': 'debit',
     'd': 'debit-adjustment',
@@ -19,19 +22,19 @@ txn_type_codes = {
 }
 
 
-def formatDate(date):
-    if date is None:
+def formatDate(dt: date) -> str:
+    if dt is None:
         return None
-    return date.isoformat()
+    return dt.isoformat()
 
 
-def toAssetValue(type, amount):
-    if type in ('C', 'c'):
+def toAssetValue(type_code: str, amount: int | float) -> int | float:
+    if type_code in ('C', 'c'):
         return amount * -1
     return amount
 
 
-def toCurrency(amount):
+def toCurrency(amount : int | float) -> dict:
     return {
         "fixed": int(amount * 100),
         "scale": 2,
@@ -40,30 +43,30 @@ def toCurrency(amount):
 
 
 def fetch_scheduled_transactions():
-    cols = ['recur_id', 'type_code', 'payee', 'memo', 'amount', 'rrule', 'start_dt', 'icon', 'color']
+    COLS = ['recur_id', 'type_code', 'payee', 'memo', 'amount', 'rrule', 'start_dt', 'icon', 'color']
 
     cur = Sanic.get_app().ctx.db.cursor()
-    cur.execute("SELECT " + ",".join(cols) + " FROM recurring")
+    cur.execute("SELECT " + ",".join(COLS) + " FROM recurring")
 
     for row in cur:
-        yield dict(zip(cols, row))
+        yield dict(zip(COLS, row))
 
 
 def fetch_transactions():
-    first_day_curr_month_sql = 'subdate(curdate(), (day(curdate()) - 1))'
-    cols = ['reg_id', 'type_code', 'date', 'payee', 'memo', 'amount', 'icon', 'color', 'recur_date', 'recur_id']
+    COLS = ['reg_id', 'type_code', 'date', 'payee', 'memo',
+            'amount', 'icon', 'color', 'recur_date', 'recur_id']
 
     # get previous balance
     cur = Sanic.get_app().ctx.db.cursor()
     cur.execute(
-        "SELECT " + first_day_curr_month_sql + ", ifNull(balance, 0)" +
+        "SELECT " + FIRST_DAY_CURR_MONTH_SQL + ", ifNull(balance, 0)" +
         " FROM statement" +
-        " WHERE date = " + first_day_curr_month_sql)
+        " WHERE date = " + FIRST_DAY_CURR_MONTH_SQL)
 
 
     # yield previous balance
     (date, balance) = cur.fetchone()
-    txn = dict(zip(cols, [0, 'B', date, 'Previous Balance', None, balance, None, None, None, None]))
+    txn = dict(zip(COLS, [0, 'B', date, 'Previous Balance', None, balance, None, None, None, None]))
     txn['balance'] = balance
     yield txn
 
@@ -71,26 +74,26 @@ def fetch_transactions():
     # fetch transactions
     cur = Sanic.get_app().ctx.db.cursor()
     cur.execute(
-        "SELECT " + ",".join(cols) + " FROM register" +
-        " WHERE date >= " + first_day_curr_month_sql +
+        "SELECT " + ",".join(COLS) + " FROM register" +
+        " WHERE date >= " + FIRST_DAY_CURR_MONTH_SQL +
         " ORDER BY date ASC, amount DESC")
 
 
     # yield transactions
     for row in cur:
-        txn = dict(zip(cols, row))
+        txn = dict(zip(COLS, row))
         balance += toAssetValue(txn['type_code'], txn['amount'])
         txn['balance'] = balance
         yield txn
 
 
 @bp.get("/transactions")
-async def transactions(req: Request) -> HTTPResponse:
+async def transactions(_: Request) -> HTTPResponse:
     txns = []
     for row in fetch_transactions():
         txns.append({
             "id": row['reg_id'],
-            "type": txn_type_codes[row['type_code']],
+            "type": TXN_TYPE_CODES[row['type_code']],
             "date": formatDate(row['date']),
             "payee": row['payee'],
             "memo": row['memo'],
@@ -106,7 +109,7 @@ async def transactions(req: Request) -> HTTPResponse:
 
 
 @bp.get("/scheduled")
-async def scheduled(req: Request) -> HTTPResponse:
+async def scheduled(_: Request) -> HTTPResponse:
     # compute begining of today and end date
     today = datetime.combine(date.today(), datetime.min.time())
     end_date = today + relativedelta(months=2)
@@ -122,7 +125,7 @@ async def scheduled(req: Request) -> HTTPResponse:
         for instance in instances:
             txns.append({
                 "id": len(txns),
-                "type": txn_type_codes[row['type_code']],
+                "type": TXN_TYPE_CODES[row['type_code']],
                 "date": formatDate(instance.date()),
                 "payee": row['payee'],
                 "memo": row['memo'],
