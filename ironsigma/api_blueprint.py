@@ -41,6 +41,22 @@ def toCurrency(amount : int | float) -> dict:
         "currency": "USD"
     }
 
+def toMapKey(txn_id: int, txn_date: date) -> str:
+    return f'{txn_id}:{txn_date.isoformat()}'
+
+
+def fetch_scheduled_instances_map() -> dict:
+    cur = Sanic.get_app().ctx.db.cursor()
+    cur.execute("SELECT recur_id, recur_date" +
+        " FROM register" +
+        " WHERE date >= " + FIRST_DAY_CURR_MONTH_SQL)
+
+    inst_map = {}
+    for row in cur:
+        inst_map[toMapKey(row[0], row[1])] = True
+
+    return inst_map
+
 
 def fetch_scheduled_transactions():
     COLS = ['recur_id', 'type_code', 'payee', 'memo', 'amount', 'rrule', 'start_dt', 'icon', 'color']
@@ -114,8 +130,10 @@ async def scheduled(_: Request) -> HTTPResponse:
     today = datetime.combine(date.today(), datetime.min.time())
     end_date = today + relativedelta(months=2)
 
-    # genereate future transactions from scheduled transactions
     txns = []
+    reg_map = fetch_scheduled_instances_map()
+
+    # genereate future transactions from scheduled transactions
     for row in fetch_scheduled_transactions():
         # build rule, and generate instances
         rule = rrulestr(row['rrule'], dtstart=row['start_dt'])
@@ -123,6 +141,9 @@ async def scheduled(_: Request) -> HTTPResponse:
 
         # for each instance build a record
         for instance in instances:
+            if toMapKey(row['recur_id'], instance.date()) in reg_map:
+                continue
+
             txns.append({
                 "id": len(txns),
                 "type": TXN_TYPE_CODES[row['type_code']],

@@ -17,13 +17,17 @@ def app():
 
 
 def test_transactions(app):
-    first_of_the_month = datetime.datetime.now().replace(day=1)
+    first_of_the_month = datetime.datetime.now().replace(day=1).date()
 
-    app.ctx.sql_cur_results = [
-        [first_of_the_month, 3500],
-        [2, 'D', first_of_the_month, 'ACME Co.', 'Salary', 1500, None, None, None, None],
-        [1, 'C', first_of_the_month, 'Bank One', 'Morgage', 2300, 'home', 'red', None, None],
-    ]
+    app.ctx.sql_cur_results = {
+        'FROM statement': [
+            [first_of_the_month, 3500],
+        ],
+        'FROM register': [
+            [2, 'D', first_of_the_month, 'ACME Co.', 'Salary', 1500, None, None, None, None],
+            [1, 'C', first_of_the_month, 'Bank One', 'Morgage', 2300.12, 'home', 'red', None, None],
+        ]
+    }
 
     _, res = app.test_client.get("/api/transactions")
 
@@ -45,15 +49,22 @@ def test_transactions(app):
     tx = json_res[2]
     assert tx['type'] == 'credit'
     assert tx['payee'] == 'Bank One'
-    assert tx['amount'] == { 'fixed': 230000, 'scale': 2, 'currency': 'USD' }
-    assert tx['balance'] == { 'fixed': 270000, 'scale': 2, 'currency': 'USD' }
+    assert tx['amount'] == { 'fixed': 230012, 'scale': 2, 'currency': 'USD' }
+    assert tx['balance'] == { 'fixed': 269988, 'scale': 2, 'currency': 'USD' }
 
 
 def test_scheduled(app):
-    now = datetime.datetime.now()
+    today = datetime.datetime.now().date()
 
-    app.ctx.sql_cur_results = [[1, 'C', 'Mr. Smith', 'Rent', 1200,
-        'RRULE:FREQ=MONTHLY', now, 'home', 'red']]
+    app.ctx.sql_cur_results = {
+        'FROM register': [
+            [2, today]
+        ],
+        'FROM recurring': [
+            [1, 'C', 'Mr. Smith', 'Rent', 1200, 'RRULE:FREQ=MONTHLY', today, 'home', 'red'],
+            [2, 'C', 'eCafee', None, 550, 'RRULE:FREQ=MONTHLY', today, None, None],
+        ]
+    }
 
     _, res = app.test_client.get("/api/scheduled")
 
@@ -61,6 +72,8 @@ def test_scheduled(app):
 
     json_res = json.loads(res.body)
     assert json_res['start_date'] == datetime.date.today().isoformat()
+
+    assert len(json_res['transactions']) == 5
 
     tx = json_res['transactions'][0]
     assert tx['type'] == 'credit'

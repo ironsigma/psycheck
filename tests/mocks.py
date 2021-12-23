@@ -10,23 +10,24 @@ class MockCursor:
 
         app = Sanic.get_app()
         if hasattr(app.ctx, 'sql_cur_results'):
-            self.item_list = app.ctx.sql_cur_results
+            for sql, results in app.ctx.sql_cur_results.items():
+                if sql in query:
+                    self.item_list = results
+                    break
 
     def fetchone(self):
         if not self.item_list:
-            print("row:", None)
+            print("fetchone() ->", None)
             return None
 
         row = self.item_list.pop(0)
-        print("row:", row)
+        print("fetchone() ->", row)
         return row
 
     def __iter__(self):
         for item in self.item_list:
-            print("row:", item)
+            print("iter ->:", item)
             yield item
-
-        self.item_list = []
 
 
 class MockDatabase:
