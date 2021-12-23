@@ -2,7 +2,7 @@ import os
 import re
 
 
-def load(fileOrStream, env_prefix='') -> dict:
+def load(fileOrStream: str | object, env_prefix: str = '') -> dict[str, str]:
     """Load environment file as dictionary.
 
     File is just lines of key value pairs separated by an equal sign.
@@ -25,7 +25,7 @@ def load(fileOrStream, env_prefix='') -> dict:
     ADMIN_EMAIL=admin@${DOMAIN}
     GREETING_TEXT=Hello ${USER}\n\nWelcome to my site
     """
-    env = {}
+    env: dict[str, str] = {}
 
     if isinstance(fileOrStream, str):
         if os.path.exists(fileOrStream):
@@ -40,7 +40,7 @@ def load(fileOrStream, env_prefix='') -> dict:
     return env
 
 
-def _load(stream, env_prefix: str) -> dict:
+def _load(stream, env_prefix: str) -> dict[str, str]:
     env = {}
 
     for line in stream:
@@ -55,7 +55,7 @@ def _load(stream, env_prefix: str) -> dict:
             continue
 
         # split
-        key, val = re.split(r'\s*=\s*', line, 1);
+        key, val = re.split(r'\s*=\s*', line, 1)
 
         # overide with env
         if f'{env_prefix}{key}' in os.environ:

@@ -1,12 +1,11 @@
 from sanic import Blueprint
 from sanic import Sanic, response
-from sanic.log import logger
 from sanic.request import Request
 from sanic.response import HTTPResponse
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import rrulestr
-from typing import Final
+from typing import cast, Any, Final
 
 
 bp = Blueprint("api")
@@ -22,19 +21,19 @@ TXN_TYPE_CODES : Final = {
 }
 
 
-def formatDate(dt: date) -> str:
+def formatDate(dt: date) -> str | None:
     if dt is None:
         return None
     return dt.isoformat()
 
 
-def toAssetValue(type_code: str, amount: int | float) -> int | float:
+def toAssetValue(type_code: str, amount: float) -> float:
     if type_code in ('C', 'c'):
         return amount * -1
     return amount
 
 
-def toCurrency(amount : int | float) -> dict:
+def toCurrency(amount: float) -> dict[str, Any]:
     return {
         "fixed": int(amount * 100),
         "scale": 2,
@@ -109,15 +108,15 @@ async def transactions(_: Request) -> HTTPResponse:
     for row in fetch_transactions():
         txns.append({
             "id": row['reg_id'],
-            "type": TXN_TYPE_CODES[row['type_code']],
-            "date": formatDate(row['date']),
+            "type": TXN_TYPE_CODES[str(row['type_code'])],
+            "date": formatDate(cast(date, row['date'])),
             "payee": row['payee'],
             "memo": row['memo'],
-            "amount": toCurrency(row['amount']),
-            "balance": toCurrency(row['balance']),
+            "amount": toCurrency(cast(float, row['amount'])),
+            "balance": toCurrency(cast(float, row['balance'])),
             "icon": row['icon'],
             "color": row['color'],
-            "scheduled": formatDate(row['recur_date']),
+            "scheduled": formatDate(cast(date, row['recur_date'])),
             "recur_id": row['recur_id'],
         })
 

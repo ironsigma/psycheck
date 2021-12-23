@@ -6,6 +6,9 @@ name: Python Test Coverage
 on:
   workflow_dispatch:
 
+  pull_request:
+    branches: ["master"]
+
   push:
     branches:
     - feature/*
@@ -17,6 +20,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+          cache: 'pip'
 
       - name: Installing Packages
         run: |
