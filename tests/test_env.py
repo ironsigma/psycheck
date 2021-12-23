@@ -34,14 +34,29 @@ def test_prioritize_env():
     assert config['HOME'] == home
 
 
+def test_load_file():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    print("===", dir_path)
+
+    config = env.load(dir_path + "/res/env_test")
+
+    assert config['DB_NAME'] == 'mydb'
+    assert config['DB_USER'] == 'joe'
+    assert config['DB_PASS'] == 's3cr3t'
+
+
 def test_ref_var():
     config_string = io.StringIO("""
 DOMAIN = example.com
+TOKEN = ${str}
+EMPTY = ${}
 ADMIN_EMAIL = admin@${DOMAIN}""")
 
     config = env.load(config_string)
 
     assert config['ADMIN_EMAIL'] == "admin@example.com"
+    assert config['TOKEN'] == "${str}"
+    assert config['EMPTY'] == "${}"
 
 
 def test_ref_environment_no_prefix_match():
